@@ -1,5 +1,7 @@
 # Bug Buster: El Piso Vacío
 
+🎮 **Jugar en línea (Demo en vivo):** [https://bugsbusters.netlify.app/](https://bugsbusters.netlify.app/)
+
 ---
 
 ## 1. Aplicación o mini-juego funcional
@@ -10,6 +12,8 @@
 Avanzar por el **Piso HTML** derrotando en orden a tres jefes (**El Tag Fantasma**, **La Etiqueta Roja** y **El `<html>` Corrupto**) respondiendo preguntas reales de HTML5, administrando defensas, ataques especiales, monedas y cafés curativos, mientras recolectas pistas sobre qué ocurrió con el último desarrollador.
 
 ### Cómo ejecutar el proyecto
+- **Opción 1 — En línea (sin instalar nada):** Abre directamente [https://bugsbusters.netlify.app/](https://bugsbusters.netlify.app/) en tu navegador.
+- **Opción 2 — En local:**
 
 1. **Requisitos previos:** Node.js (v18+) y npm.
 2. **Instalación de dependencias:**
