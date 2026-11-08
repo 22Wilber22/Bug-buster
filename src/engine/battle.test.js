@@ -69,7 +69,7 @@ describe('turn resolution', () => {
 
   it('wrong answer: no damage to boss, boss crits for 2x', () => {
     const state = turn(turn(start(), true), false)
-    expect(state).toMatchObject({ bossHp: 190, playerHp: 70, streak: 0 })
+    expect(state).toMatchObject({ bossHp: 190, playerHp: 70, streak: 2 })
     expect(state.lastTurn.critical).toBe(true)
   })
 
@@ -128,31 +128,87 @@ describe('comment (shield)', () => {
 })
 
 describe('streak and refactor', () => {
-  it('streak caps at 3 and resets on a wrong answer', () => {
-    let state = turns(start(), [true, true, true, true])
+  it('1. una respuesta correcta aumenta la carga', () => {
+    const state = turn(start(), true)
+    expect(state.streak).toBe(1)
+  })
+
+  it('2. una respuesta incorrecta también aumenta la carga', () => {
+    const state1 = turn(start(), false)
+    expect(state1.streak).toBe(1)
+    const state2 = turn(state1, false)
+    expect(state2.streak).toBe(2)
+  })
+
+  it('3. la carga máxima es 3', () => {
+    const state = turns(start(), [true, false, true, true])
     expect(state.streak).toBe(3)
-    expect(turn(state, false).streak).toBe(0)
   })
 
-  it('refactor is blocked below streak 3', () => {
-    const state = turns(start(), [true, true])
-    expect(canRefactor(state)).toBe(false)
-    expect(battle(state, { type: 'refactor' })).toBe(state)
+  it('4. el ataque especial solo está disponible cuando la carga llega a 3 y el estado permite elegir una acción', () => {
+    const notReady = turns(start(), [true, false])
+    expect(notReady.streak).toBe(2)
+    expect(canRefactor(notReady)).toBe(false)
+    expect(battle(notReady, { type: 'refactor' })).toBe(notReady)
+
+    const ready = turns(start(), [true, false, true])
+    expect(ready.streak).toBe(3)
+    expect(canRefactor(ready)).toBe(true)
+
+    const inQuestion = battle(ready, { type: 'debug' })
+    expect(inQuestion.phase).toBe('question')
+    expect(canRefactor(inQuestion)).toBe(false)
+    expect(battle(inQuestion, { type: 'refactor' })).toBe(inQuestion)
   })
 
-  it('refactor asks a question; correct deals 2x and resets streak', () => {
+  it('5. el ataque especial consume la carga al resolver su pregunta, tanto si se acierta como si se falla', () => {
+    const ready = turns(start(), [true, true, true])
+    const askingHit = battle(ready, { type: 'refactor' })
+    const afterHit = battle(askingHit, { type: 'answer', correct: true })
+    expect(afterHit.streak).toBe(0)
+
+    const askingMiss = battle(ready, { type: 'refactor' })
+    const afterMiss = battle(askingMiss, { type: 'answer', correct: false })
+    expect(afterMiss.streak).toBe(0)
+  })
+
+  it('6. cancelar el modal no consume la carga', () => {
     const ready = turns(start(), [true, true, true])
     const asking = battle(ready, { type: 'refactor' })
-    expect(asking).toMatchObject({ phase: 'question', refactoring: true })
-    expect(asking.question).toBeTruthy()
-    const state = battle(asking, { type: 'answer', correct: true })
-    expect(state).toMatchObject({ bossHp: ready.bossHp - PLAYER_DAMAGE * 2, streak: 0, refactoring: false })
+    expect(asking.phase).toBe('question')
+    expect(asking.refactoring).toBe(true)
+    const cancelled = battle(asking, { type: 'cancel' })
+    expect(cancelled.phase).toBe('choose')
+    expect(cancelled.streak).toBe(3)
+    expect(cancelled.refactoring).toBe(false)
+    expect(canRefactor(cancelled)).toBe(true)
   })
 
-  it('wrong refactor answer: boss crits and streak resets', () => {
+  it('7. el daño del ataque especial sigue siendo 20 HP cuando la respuesta es correcta', () => {
     const ready = turns(start(), [true, true, true])
-    const state = turn(ready, false, 'refactor')
-    expect(state).toMatchObject({ bossHp: ready.bossHp, playerHp: ready.playerHp - 20, streak: 0 })
+    const asking = battle(ready, { type: 'refactor' })
+    const state = battle(asking, { type: 'answer', correct: true })
+    expect(state.bossHp).toBe(ready.bossHp - 20)
+    expect(state.lastTurn.dealt).toBe(20)
+  })
+
+  it('8. guardar y restaurar la partida conserva exactamente la carga acumulada', () => {
+    const state = turns(start(), [true, true])
+    expect(state.streak).toBe(2)
+    const snap = snapshotBattle(state)
+    expect(snap.streak).toBe(2)
+    const restored = restoreBattle(boss, snap, fixed)
+    expect(restored.streak).toBe(2)
+  })
+
+  it('9. no se puede activar el especial enviando force: true cuando la carga es insuficiente', () => {
+    const state = turns(start(), [true])
+    expect(state.streak).toBe(1)
+    expect(canRefactor(state)).toBe(false)
+    const attempted = battle(state, { type: 'refactor', force: true })
+    expect(attempted).toBe(state)
+    expect(attempted.phase).toBe('choose')
+    expect(attempted.refactoring).toBe(false)
   })
 })
 
@@ -230,5 +286,275 @@ describe('invalid input and purity', () => {
     ]
     for (const action of actions) state = deepFreeze(battle(state, action))
     expect(state.phase).toBe('won')
+  })
+})
+
+describe('educational enhancements (hints, explanations, validation)', () => {
+  const educationalQuestions = [
+    {
+      id: 'eq1',
+      type: 'multiple',
+      text: '¿Cómo se cierra un div?',
+      options: ['<div/>', '</div>'],
+      correctIndex: 1,
+      hint: 'Las etiquetas de cierre en HTML inician con barra.',
+      explanation: 'La etiqueta </div> cierra el bloque div.',
+    },
+    {
+      id: 'eq2',
+      type: 'truefalse',
+      text: 'HTML es un lenguaje compilado.',
+      answer: false,
+    },
+  ]
+  const eduBoss = { id: 'edu-boss', hp: 100, damage: 10, questions: educationalQuestions }
+
+  it('valida preguntas existentes mediante isAnswerCorrect delegando en validateChallenge', () => {
+    expect(isAnswerCorrect(educationalQuestions[0], 1)).toBe(true)
+    expect(isAnswerCorrect(educationalQuestions[0], 0)).toBe(false)
+    expect(isAnswerCorrect(educationalQuestions[1], false)).toBe(true)
+    expect(isAnswerCorrect(educationalQuestions[1], true)).toBe(false)
+  })
+
+  it('permite pistas opcionales en el estado de la pregunta activa', () => {
+    let state = createBattle(eduBoss, fixed)
+    state = battle(state, { type: 'debug' })
+    expect(state.question.hint).toBe('Las etiquetas de cierre en HTML inician con barra.')
+
+    const standardBattle = battle(start(), { type: 'debug' })
+    expect(standardBattle.question.hint).toBeUndefined()
+  })
+
+  it('incluye explicación en lastTurn si la pregunta la define, o undefined si no la tiene', () => {
+    let state = createBattle(eduBoss, fixed)
+    state = battle(state, { type: 'debug' })
+    state = battle(state, { type: 'answer', correct: false })
+    expect(state.lastTurn.explanation).toBe('La etiqueta </div> cierra el bloque div.')
+
+    // Pregunta sin explicación
+    let normalState = battle(start(), { type: 'debug' })
+    normalState = battle(normalState, { type: 'answer', correct: true })
+    expect(normalState.lastTurn.explanation).toBeUndefined()
+  })
+
+  it('no altera el cálculo de daño ni las reglas de combate al incluir explicaciones', () => {
+    let state = createBattle(eduBoss, fixed)
+    state = battle(state, { type: 'debug' })
+    state = battle(state, { type: 'answer', correct: true })
+    expect(state.bossHp).toBe(90) // 100 - PLAYER_DAMAGE (10)
+    expect(state.playerHp).toBe(90) // 100 - boss damage (10)
+    expect(state.lastTurn.dealt).toBe(10)
+    expect(state.lastTurn.taken).toBe(10)
+  })
+
+  it('conserva lastTurn.explanation en snapshots y restauración de partidas', () => {
+    let state = createBattle(eduBoss, fixed)
+    state = battle(state, { type: 'debug' })
+    state = battle(state, { type: 'answer', correct: false })
+    const snap = snapshotBattle(state)
+    expect(snap.lastTurn.explanation).toBe('La etiqueta </div> cierra el bloque div.')
+
+    const restored = restoreBattle(eduBoss, snap, fixed)
+    expect(restored.lastTurn.explanation).toBe('La etiqueta </div> cierra el bloque div.')
+  })
+})
+
+describe('complete-code and fix-bug challenges (Paso 3.3)', () => {
+  const completeQuestion = {
+    id: 'cc-test-1',
+    type: 'complete-code',
+    text: 'Completa la etiqueta de cierre:',
+    template: '<div>\n{{b1}}',
+    blanks: [{ id: 'b1', placeholder: '</div>', expected: ['</div>'] }],
+    explanation: 'La etiqueta </div> cierra correctamente el bloque.',
+  }
+
+  const fixBugQuestion = {
+    id: 'fb-test-1',
+    type: 'fix-bug',
+    text: 'Corrige la etiqueta errónea:',
+    initialCode: '<\\div>',
+    target: '<\\div>',
+    acceptedSolutions: ['</div>'],
+    explanation: 'En HTML se usa barra diagonal hacia adelante: </div>.',
+  }
+
+  const mixedBoss = {
+    id: 'mixed',
+    hp: 100,
+    damage: 10,
+    questions: [completeQuestion, fixBugQuestion],
+  }
+
+  it('un desafío complete-code con respuesta correcta aplica 10 HP de daño base', () => {
+    let state = createBattle(mixedBoss, fixed)
+    state = battle(state, { type: 'debug' })
+    expect(state.question.id).toBe('cc-test-1')
+    state = battle(state, { type: 'answer', correct: true })
+    expect(state.bossHp).toBe(90)
+    expect(state.lastTurn.dealt).toBe(10)
+  })
+
+  it('un desafío fix-bug correcto aplica 10 HP de daño base', () => {
+    let state = createBattle(mixedBoss, () => 0.9)
+    state = battle(state, { type: 'debug' })
+    expect(state.question.id).toBe('fb-test-1')
+    state = battle(state, { type: 'answer', correct: true })
+    expect(state.bossHp).toBe(90)
+    expect(state.lastTurn.dealt).toBe(10)
+  })
+
+  it('una respuesta incorrecta a un fix-bug provoca contraataque crítico', () => {
+    let state = createBattle(mixedBoss, () => 0.9)
+    state = battle(state, { type: 'debug' })
+    state = battle(state, { type: 'answer', correct: false })
+    expect(state.lastTurn.dealt).toBe(0)
+    expect(state.lastTurn.critical).toBe(true)
+    expect(state.playerHp).toBe(80) // boss damage 10 × CRIT_MULTIPLIER 2 = 20
+  })
+
+  it('complete-code en ataque especial aplica 20 HP de daño al acertar', () => {
+    let state = createBattle(mixedBoss, fixed)
+    state = turns(state, [true, true, true])
+    expect(state.streak).toBe(3)
+    state = battle(state, { type: 'refactor' })
+    expect(state.refactoring).toBe(true)
+    state = battle(state, { type: 'answer', correct: true })
+    expect(state.lastTurn.dealt).toBe(20)
+    expect(state.streak).toBe(0)
+  })
+
+  it('cancelar complete-code no consume la carga del ataque especial', () => {
+    let state = createBattle(mixedBoss, fixed)
+    state = turns(state, [true, true, true])
+    state = battle(state, { type: 'refactor' })
+    expect(state.refactoring).toBe(true)
+    const cancelled = battle(state, { type: 'cancel' })
+    expect(cancelled.phase).toBe('choose')
+    expect(cancelled.streak).toBe(3)
+    expect(cancelled.refactoring).toBe(false)
+  })
+
+  it('la explicación llega a lastTurn en complete-code y fix-bug', () => {
+    let state = createBattle(mixedBoss, fixed)
+    state = battle(state, { type: 'debug' })
+    state = battle(state, { type: 'answer', correct: false, explanation: completeQuestion.explanation })
+    expect(state.lastTurn.explanation).toBe('La etiqueta </div> cierra correctamente el bloque.')
+  })
+
+  it('partidas guardadas con complete-code en curso se restauran correctamente', () => {
+    let state = createBattle(mixedBoss, fixed)
+    state = battle(state, { type: 'debug' })
+    expect(state.question.type).toBe('complete-code')
+    const snap = snapshotBattle(state)
+    expect(snap.questionId).toBe('cc-test-1')
+    const restored = restoreBattle(mixedBoss, snap, fixed)
+    expect(restored.question.type).toBe('complete-code')
+    expect(restored.question.blanks).toBeDefined()
+  })
+
+  it('no daña el balance de las preguntas originales del juego', () => {
+    // Las preguntas existentes (multiple/truefalse) siguen funcionando con isAnswerCorrect
+    expect(isAnswerCorrect({ id: 'q', type: 'multiple', options: ['a', 'b'], correctIndex: 1 }, 1)).toBe(true)
+    expect(isAnswerCorrect({ id: 'q', type: 'truefalse', answer: false }, false)).toBe(true)
+    expect(isAnswerCorrect({ id: 'q', type: 'truefalse', answer: false }, true)).toBe(false)
+  })
+})
+
+describe('order-code, predict-output y write-code (Paso 3.4)', () => {
+  const orderQ = {
+    id: 'oc1', type: 'order-code',
+    lines: [{ id: 'l1', content: 'a' }, { id: 'l2', content: 'b' }, { id: 'l3', content: 'c' }],
+    correctOrder: ['l1', 'l2', 'l3'],
+  }
+  const predictTextQ = {
+    id: 'po1', type: 'predict-output',
+    code: '<p>Hola</p>',
+    acceptedSolutions: ['Hola'],
+    explanation: 'El elemento <p> muestra su contenido como texto.',
+  }
+  const predictOptionsQ = {
+    id: 'po2', type: 'predict-output',
+    options: ['Rojo', 'Verde', 'Azul'],
+    correctIndex: 1,
+  }
+  const writeQ = {
+    id: 'wc1', type: 'write-code',
+    acceptedSolutions: ['target="_blank"'],
+    acceptedPatterns: [/^target\s*=\s*["']_blank["']$/],
+    explanation: 'El atributo target="_blank" abre el enlace en una nueva pestaña.',
+  }
+
+  const allQ = [orderQ, predictTextQ, predictOptionsQ, writeQ]
+  const boss3 = { id: 'b3', hp: 100, damage: 10, questions: allQ }
+
+  it('order-code correcto aplica 10 HP y acumula streak', () => {
+    let s = createBattle(boss3, () => 0)
+    s = battle(s, { type: 'debug' })
+    s = battle(s, { type: 'answer', correct: true })
+    expect(s.bossHp).toBe(90)
+    expect(s.streak).toBe(1)
+  })
+
+  it('order-code incorrecto provoca contraataque crítico', () => {
+    let s = createBattle(boss3, () => 0)
+    s = battle(s, { type: 'debug' })
+    s = battle(s, { type: 'answer', correct: false })
+    expect(s.lastTurn.dealt).toBe(0)
+    expect(s.lastTurn.critical).toBe(true)
+  })
+
+  it('predict-output (opciones) correcto aplica daño base', () => {
+    let s = createBattle(boss3, () => 0.3)
+    s = battle(s, { type: 'debug' })
+    s = battle(s, { type: 'answer', correct: true })
+    expect(s.bossHp).toBe(90)
+  })
+
+  it('predict-output (texto libre) correcto aplica daño base', () => {
+    let s = createBattle(boss3, () => 0.1)
+    s = battle(s, { type: 'debug' })
+    s = battle(s, { type: 'answer', correct: true })
+    expect(s.bossHp).toBe(90)
+  })
+
+  it('write-code correcto aplica 10 HP; write-code en especial aplica 20 HP', () => {
+    let s = createBattle(boss3, () => 0.6)
+    s = battle(s, { type: 'debug' })
+    s = battle(s, { type: 'answer', correct: true })
+    expect(s.bossHp).toBe(90)
+
+    // Ataque especial con write-code
+    s = turns(s, [true, true]) // streak llega a 3
+    s = battle(s, { type: 'refactor' })
+    expect(s.refactoring).toBe(true)
+    s = battle(s, { type: 'answer', correct: true })
+    expect(s.lastTurn.dealt).toBe(20)
+    expect(s.streak).toBe(0)
+  })
+
+  it('cancelar cualquier desafío nuevo no consume el ataque especial', () => {
+    let s = createBattle(boss3, () => 0)
+    s = turns(s, [true, true, true])
+    s = battle(s, { type: 'refactor' })
+    const cancelled = battle(s, { type: 'cancel' })
+    expect(cancelled.streak).toBe(3)
+    expect(cancelled.refactoring).toBe(false)
+  })
+
+  it('partidas guardadas con order-code en curso se restauran con líneas intactas', () => {
+    // Con seed 0 el primer ítem del barajado determina qué pregunta se hace primero;
+    // lo importante es que, sea cual sea, la restauración conserva blanks/lines.
+    let s = createBattle(boss3, () => 0)
+    s = battle(s, { type: 'debug' })
+    const originalType = s.question.type
+    const snap = snapshotBattle(s)
+    expect(snap.questionId).toBe(s.question.id)
+    const restored = restoreBattle(boss3, snap, () => 0)
+    expect(restored.question.type).toBe(originalType)
+    // Si era order-code comprobamos que las líneas siguen presentes
+    if (originalType === 'order-code') {
+      expect(restored.question.lines).toHaveLength(3)
+    }
   })
 })

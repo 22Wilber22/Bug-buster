@@ -58,6 +58,11 @@ function TurnFeedback({ lastTurn, turnPhase, bossName, attackName, attackQuote, 
             <strong>[Tu turno]</strong>{' '}
             {lastTurn.correct ? `¡Correcto! Hiciste ${lastTurn.dealt} de daño.` : 'Incorrecto. No hiciste daño.'}
           </p>
+          {lastTurn.explanation && (
+            <p className="explanation">
+              💡 <strong>Explicación:</strong> {lastTurn.explanation}
+            </p>
+          )}
           {!showBossStrike && (
             <p className="muted">Preparando el turno de {bossName}...</p>
           )}
@@ -130,7 +135,6 @@ function Battle({
   const [attackQuote, setAttackQuote] = useState(() => randomItem(boss.attackQuotes, randomItem(boss.taunts)))
   const [turnPhase, setTurnPhase] = useState('player')
   const [displayedPlayerHp, setDisplayedPlayerHp] = useState(null)
-  const [specialCharge, setSpecialCharge] = useState(() => snapshot?.streak ?? 0)
   const [healNote, setHealNote] = useState(null)
   const [fx, setFx] = useState(null)
   const [bossFx, setBossFx] = useState(null)
@@ -179,7 +183,6 @@ function Battle({
 
     clearTimers()
     setHealNote(null)
-    setSpecialCharge((prev) => (wasRefactoring ? 0 : Math.min(MAX_STREAK, prev + 1)))
 
     // Phase 1: Player's attack resolves first
     const hitCorrect = Boolean(next.lastTurn?.correct)
@@ -247,8 +250,8 @@ function Battle({
         </div>
       </div>
       <p className="muted">
-        Carga Ataque Especial: {specialCharge}/{MAX_STREAK}
-        {specialCharge >= MAX_STREAK && ' · ¡LISTO PARA USAR (Daño x2)!'}
+        Carga Ataque Especial: {state.streak}/{MAX_STREAK}
+        {state.streak >= MAX_STREAK && ' · ¡LISTO PARA USAR (Daño x2)!'}
         {state.shielded && ' · Comentario activo: el próximo ataque se bloquea'}
       </p>
       <TurnFeedback
@@ -266,7 +269,6 @@ function Battle({
           state={state}
           onAction={dispatch}
           busy={turnPhase !== 'player'}
-          specialCharge={specialCharge}
           coffees={coffees}
           onDrinkCoffee={handleDrinkCoffee}
         />

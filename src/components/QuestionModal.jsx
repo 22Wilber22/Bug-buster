@@ -1,20 +1,39 @@
 import { useEffect } from 'react'
-import { isAnswerCorrect } from '../engine/battle'
+import { validateChallenge } from '../engine/challengeValidator'
 import { playSfx } from '../engine/sound'
+import ChallengeHint from './ChallengeHint'
+import MultipleChoiceChallenge from './challenges/MultipleChoiceChallenge'
+import CompleteCodeChallenge from './challenges/CompleteCodeChallenge'
+import FixBugChallenge from './challenges/FixBugChallenge'
+import OrderCodeChallenge from './challenges/OrderCodeChallenge'
+import PredictOutputChallenge from './challenges/PredictOutputChallenge'
+import WriteCodeChallenge from './challenges/WriteCodeChallenge'
 
-const TRUE_FALSE_OPTIONS = [
-  { label: 'Verdadero', value: true },
-  { label: 'Falso', value: false },
-]
-
-function answerOptions(question) {
-  return question.type === 'truefalse'
-    ? TRUE_FALSE_OPTIONS
-    : question.options.map((label, index) => ({ label, value: index }))
+function renderChallengeBody(question, handleAnswer) {
+  switch (question.type) {
+    case 'complete-code':
+      return <CompleteCodeChallenge question={question} onAnswer={handleAnswer} />
+    case 'fix-bug':
+      return <FixBugChallenge question={question} onAnswer={handleAnswer} />
+    case 'order-code':
+      return <OrderCodeChallenge question={question} onAnswer={handleAnswer} />
+    case 'predict-output':
+      return <PredictOutputChallenge question={question} onAnswer={handleAnswer} />
+    case 'write-code':
+      return <WriteCodeChallenge question={question} onAnswer={handleAnswer} />
+    case 'multiple':
+    case 'truefalse':
+    default:
+      return <MultipleChoiceChallenge question={question} onAnswer={handleAnswer} />
+  }
 }
 
 function QuestionModal({ question, refactoring, onAnswer, onCancel }) {
-  const answer = (value) => onAnswer({ type: 'answer', correct: isAnswerCorrect(question, value) })
+  const answer = (value) => onAnswer({
+    type: 'answer',
+    correct: validateChallenge(question, value),
+    explanation: question.explanation,
+  })
 
   const handleClose = () => {
     playSfx('click')
@@ -35,13 +54,25 @@ function QuestionModal({ question, refactoring, onAnswer, onCancel }) {
     return () => window.removeEventListener('keydown', onKeyDown)
   })
 
+  const challengeBadge = refactoring
+    ? '⚡ Ataque Especial (Refactor): daño doble si aciertas'
+    : question.type === 'complete-code'
+      ? '⌨ Completar código'
+      : question.type === 'fix-bug'
+        ? '🛠 Corregir bug'
+        : question.type === 'order-code'
+          ? '↕ Ordenar código'
+          : question.type === 'predict-output'
+            ? '🔍 Predecir resultado'
+            : question.type === 'write-code'
+              ? '✏ Escribir código'
+              : 'Debug'
+
   return (
     <div className="modal-backdrop">
       <div className="modal" role="dialog" aria-modal="true">
         <div className="modal-header">
-          <p className="muted modal-tag">
-            {refactoring ? '⚡ Ataque Especial (Refactor): daño doble si aciertas' : 'Debug'}
-          </p>
+          <p className="muted modal-tag">{challengeBadge}</p>
           <button
             className="btn btn-secondary modal-close-btn"
             type="button"
@@ -53,19 +84,8 @@ function QuestionModal({ question, refactoring, onAnswer, onCancel }) {
           </button>
         </div>
         <h3>{question.text}</h3>
-        <div className="options">
-          {answerOptions(question).map((option) => (
-            <button
-              key={option.label}
-              className="btn option"
-              type="button"
-              onMouseEnter={() => playSfx('click')}
-              onClick={() => answer(option.value)}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
+        <ChallengeHint hint={question.hint} />
+        {renderChallengeBody(question, answer)}
       </div>
     </div>
   )

@@ -1,10 +1,9 @@
 import { canComment, canRefactor, MAX_STREAK, PLAYER_MAX_HP } from '../engine/battle'
 import { COFFEE_HEAL } from '../engine/save'
 
-function ActionBar({ state, onAction, busy = false, specialCharge, coffees = 0, onDrinkCoffee }) {
+function ActionBar({ state, onAction, busy = false, coffees = 0, onDrinkCoffee }) {
   const choosing = state.phase === 'choose' && !busy
-  const charge = typeof specialCharge === 'number' ? Math.min(MAX_STREAK, specialCharge) : state.streak
-  const refactorReady = choosing && (canRefactor(state) || charge >= MAX_STREAK)
+  const refactorReady = choosing && canRefactor(state)
   const canDrink = choosing && coffees > 0 && state.playerHp < PLAYER_MAX_HP
 
   return (
@@ -26,9 +25,9 @@ function ActionBar({ state, onAction, busy = false, specialCharge, coffees = 0, 
       <button
         className="btn btn-special"
         disabled={!refactorReady}
-        onClick={() => onAction({ type: 'refactor', force: true })}
+        onClick={() => onAction({ type: 'refactor' })}
       >
-        ⚡ Ataque Especial ({charge}/{MAX_STREAK}) · Daño x2
+        ⚡ Ataque Especial ({state.streak}/{MAX_STREAK}) · Daño x2
       </button>
       {onDrinkCoffee && (
         <button

@@ -33,7 +33,7 @@ describe('balance (player 100 hp, no shield)', () => {
   const [tag, etiqueta, html] = bosses.map(report)
 
   it('boss 1: >=70% hp left, survives ~6 misses', () => {
-    expect(tag).toEqual({ hpLeft: 82, hpLeftRefactor: 82, missesToLose: 7, missesToLoseRefactor: 7 })
+    expect(tag).toEqual({ hpLeft: 82, hpLeftRefactor: 82, missesToLose: 7, missesToLoseRefactor: 8 })
   })
 
   it('boss 2: 50-70% hp left, survives ~4-5 misses', () => {

@@ -1,3 +1,5 @@
+import { validateChallenge } from './challengeValidator'
+
 export const PLAYER_MAX_HP = 100
 export const PLAYER_DAMAGE = 10
 export const MAX_STREAK = 3
@@ -54,9 +56,7 @@ export function createBattle(boss, random = Math.random, playerHp = PLAYER_MAX_H
 }
 
 export function isAnswerCorrect(question, answer) {
-  return question.type === 'truefalse'
-    ? answer === question.answer
-    : answer === question.correctIndex
+  return validateChallenge(question, answer)
 }
 
 export function canRefactor(state) {
@@ -97,24 +97,32 @@ function bossDamage(state, correct) {
   return correct ? state.boss.damage : state.boss.damage * CRIT_MULTIPLIER
 }
 
-function nextStreak(state, correct) {
-  if (state.refactoring || !correct) return 0
+function nextStreak(state) {
+  if (state.refactoring) return 0
   return Math.min(state.streak + 1, MAX_STREAK)
 }
 
-function answer(state, correct) {
+function answer(state, correct, explanation) {
   const dealt = playerDamage(state, correct)
   const bossHp = Math.max(0, state.bossHp - dealt)
   // The boss only strikes back if it survived the player's hit.
   const taken = bossHp === 0 ? 0 : bossDamage(state, correct)
   const playerHp = Math.max(0, state.playerHp - taken)
+  const expl = explanation ?? state.question?.explanation ?? null
   return {
     ...state,
     bossHp,
     playerHp,
-    streak: nextStreak(state, correct),
+    streak: nextStreak(state),
     phase: bossHp === 0 ? 'won' : playerHp === 0 ? 'lost' : 'choose',
-    lastTurn: { correct, dealt, taken, critical: !correct && taken > 0, blocked: state.shielded && bossHp > 0 },
+    lastTurn: {
+      correct,
+      dealt,
+      taken,
+      critical: !correct && taken > 0,
+      blocked: state.shielded && bossHp > 0,
+      ...(expl ? { explanation: expl } : {}),
+    },
     shielded: false,
     question: null,
     refactoring: false,
@@ -184,11 +192,11 @@ export function battle(state, action) {
     case 'choose:debug':
       return askQuestion(state, false)
     case 'choose:refactor':
-      return canRefactor(state) || action.force === true ? askQuestion(state, true) : state
+      return canRefactor(state) ? askQuestion(state, true) : state
     case 'question:cancel':
       return cancelQuestion(state)
     case 'question:answer':
-      return answer(state, action.correct === true)
+      return answer(state, action.correct === true, action.explanation)
     default:
       return state
   }
