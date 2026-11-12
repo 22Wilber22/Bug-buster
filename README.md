@@ -1,186 +1,178 @@
-# Bug Buster: El Piso Vacío
+# Bug Buster: El Piso Vacío (Pixel Art RPG & Cyberpunk Arcade Edition)
 
-🎮 **Jugar en línea (Demo en vivo):** [https://bugsbusters.netlify.app/](https://bugsbusters.netlify.app/)
-
----
-
-## 1. Aplicación o mini-juego funcional
-
-**Bug Buster: El Piso Vacío** es un RPG educativo e interactivo por turnos con estética retro-terminal donde encarnas a un desarrollador novato en su primer día en *TechCorp*. El edificio está vacío, el último programador desapareció y los bugs del piso de HTML cobraron vida.
-
-### Objetivo del juego
-Avanzar por el **Piso HTML** derrotando en orden a tres jefes (**El Tag Fantasma**, **La Etiqueta Roja** y **El `<html>` Corrupto**) respondiendo preguntas reales de HTML5, administrando defensas, ataques especiales, monedas y cafés curativos, mientras recolectas pistas sobre qué ocurrió con el último desarrollador.
-
-### Cómo ejecutar el proyecto
-- **Opción 1 — En línea (sin instalar nada):** Abre directamente [https://bugsbusters.netlify.app/](https://bugsbusters.netlify.app/) en tu navegador.
-- **Opción 2 — En local:**
-
-1. **Requisitos previos:** Node.js (v18+) y npm.
-2. **Instalación de dependencias:**
-   ```bash
-   npm install
-   ```
-3. **Iniciar el juego en modo desarrollo:**
-   ```bash
-   npm run dev
-   ```
-   *(Abre en el navegador la URL mostrada en consola, por defecto `http://localhost:5173`).*
-
-| Comando | Descripción |
-| :--- | :--- |
-| `npm run dev` | Inicia el servidor local de desarrollo con Vite (HMR). |
-| `npm test` | Ejecuta las pruebas automatizadas con **Vitest** (`battle`, `balance`, `save`, `sound`). |
-| `npm run build` | Genera la versión de producción en la carpeta `dist/`. |
-| `npm run preview` | Previsualiza localmente el build de producción. |
-| `npm run lint` | Verifica el código con **Oxlint**. |
-
-### Mecánicas principales
-- **Debug (Ataque básico):** Abre una pregunta de HTML (opción múltiple o verdadero/falso) con opción de cerrarla (`✕` / `Esc`) si decides cambiar de estrategia antes de responder. Si aciertas, haces `10` de daño; si fallas, no haces daño y el jefe contraataca con golpe crítico (`x2`).
-- **Comentar (Defensa):** Hasta `2` usos por combate. Coloca un comentario `<!-- -->` que bloquea por completo el próximo ataque del jefe.
-- **⚡ Ataque Especial (Refactor · Daño x2):** Se carga cada `3` turnos jugados (`3/3`) y permite lanzar un ataque que inflige el doble de daño (`20`).
-- **🪙 Monedas y ☕ Máquina de Café TechCorp:** Al vencer a cada jefe ganas monedas (`+30`, `+50` y `+80 🪙`) con las que puedes comprar **Café (+35 HP por 25 🪙)** en el mapa o entre combates y tomarlo durante tu turno.
-- **🔊 Audio retro y Mute:** Música ambiental sintetizada en tiempo real con **Web Audio API** (ambiente misterioso para el piso vacío y chiptune tenso para las batallas), efectos de sonido interactivos y botón global de **Mute** (`🔊 Sonido: ON` / `🔇 Mutear: OFF`) persistido en `localStorage`.
+🎮 **Demo en vivo:** [https://bugsbusters.netlify.app/](https://bugsbusters.netlify.app/)
 
 ---
 
-## 2. Evidencia de Vibecoding (Prompts utilizados)
+## 1. Descripción General y Lore (Historia)
 
-A continuación se presentan los prompts principales utilizados durante el desarrollo y su análisis:
+**Bug Buster: El Piso Vacío** es un **RPG educativo de combate por turnos y exploración lateral 2D** con dirección artística **Pixel Art RPG + Cyberpunk Arcade**.
 
-### Prompt 1 — Concepto base, narrativa y motor de combate por turnos
+### Lore / Narrativa ("El Piso Vacío de TechCorp")
+Encarnas a un desarrollador novato en su primer día en **TechCorp**. Al cruzar las puertas del edificio corporativo, descubres que las oficinas están desiertas, las terminales parpadean en la oscuridad y el último programador senior (**Alex "Root" Vance**) desapareció sin dejar rastro tras desplegar un misterioso commit a medianoche.
 
-> Quiero crear un RPG educativo por turnos llamado **"Bug Buster: El Piso Vacío"** con estética retro-terminal (fondo `#0a0e14`, texto verde `#00ff9c`, acentos cian `#00d4ff`, peligro `#ff4d4d`, tipografía monoespaciada y efecto scanlines en CSS).
->
-> **Historia:** Es tu primer día en TechCorp. El edificio está vacío, el último dev desapareció y los bugs hablan.
->
-> **Sistema de combate por turnos:**
-> - El jugador tiene `100 HP` y tres acciones en su turno:
->   1. **Depurar:** lanza una pregunta de HTML (opción múltiple o verdadero/falso). Si responde bien, hace `10` de daño al jefe y suma `+1` a su racha. Si falla, hace `0` de daño, pierde la racha y recibe daño crítico (`x2`) del jefe.
->   2. **Comentar:** actúa como escudo que bloquea el próximo ataque del jefe (máximo 2 usos por batalla).
->   3. **Refactorizar:** solo se activa al llegar a una racha de `3` aciertos seguidos; lanza una pregunta que, al acertar, hace el doble de daño (`20`) y consume la racha.
-> - Las preguntas deben barajarse de forma aleatoria sin repetir la última pregunta al reiniciar el mazo entre rondas.
+Pronto descubres la verdad a través de los registros y pistas que sueltan los jefes: un experimento de automatización corrompió la arquitectura del edificio, haciendo que los **bugs de programación cobraran vida propia** y tomaran el control de los **4 pisos de la Torre TechCorp**:
+1. **Piso 1 — HTML: El Piso Vacío** (Estructura semántica y DOM roto).
+2. **Piso 2 — CSS: El Reino Desordenado** (Cascada, especificidad, Flexbox/Grid y Media Queries fuera de control).
+3. **Piso 3 — JavaScript: El Bucle Infinito** (Tipos indefinidos, ciclos sin condición de salida y promesas asíncronas colgadas).
+4. **Piso 4 — React: La Última Renderización** (JSX roto, Hooks malditos y un bucle de re-renderizado infinito en la cima de la torre).
 
-- **i. ¿Qué se pidió a la IA?**
-  Se solicitó construir la base del juego: la paleta visual retro-terminal, la lógica pura del motor de combate por turnos (`src/engine/battle.js`), el sistema de preguntas aleatorias sin repeticiones consecutivas y las tres acciones tácticas iniciales (*Depurar*, *Comentar* y *Refactorizar*).
-- **ii. ¿Por qué se ajustó o refinó el prompt?**
-  En una idea inicial sin especificar valores numéricos ni reglas de barajado, el combate podía volverse desbalanceado o repetir la misma pregunta dos veces seguidas al terminar una ronda. Se refinó el prompt fijando valores exactos (`100 HP`, `10` de daño base, multiplicador `x2`, límite de `2` escudos) y pidiendo un generador aleatorio con semilla para poder probar la lógica con tests unitarios.
+Acompañado por **Byte**, el droide mercader que regenta la tienda tecnológica de la torre, deberás explorar cada piso, resolver desafíos reales de código para depurar a los **12 jefes**, mejorar tu equipamiento y descubrir qué sucedió realmente con el último desarrollador.
 
 ---
 
-### Prompt 2 — Mapa de pisos, jefes del piso HTML, pistas narrativas, cinemática y tests
+## 2. Stack Tecnológico y Arquitectura
 
-> Agrega el flujo completo de pantallas del juego (**Intro**, **Mapa de pisos**, **Batalla**, **Pista encontrada** y **Final de victoria/derrota**) junto con los datos de los jefes y pruebas automatizadas:
->
-> 1. **Mapa de pisos:**
->    - **Piso HTML** (jugable) con 3 jefes que se desbloquean en orden a medida que vences al anterior.
->    - **Piso CSS** y **Piso JS** visibles en el mapa pero marcados como *"Próximamente"*.
-> 2. **Los 3 jefes del Piso HTML:**
->    - **El Tag Fantasma** (`40 HP`, ataque *"Etiqueta huérfana"*).
->    - **La Etiqueta Roja** (`80 HP`, ataque *"Enlace a ninguna parte"*).
->    - **El html Corrupto** (`130 HP`, ataque *"Pantalla azul"*).
-> 3. **Narrativa y cinemática:**
->    - Al derrotar a cada jefe, muestra una pantalla con la **pista** que deja atrás sobre la desaparición del último desarrollador.
->    - Incluye soporte en la pantalla de Intro para reproducir el video `src/assets/intro.mp4` a pantalla completa con botón **Saltar**.
-> 4. **Tests:** Agrega tests unitarios con Vitest para la lógica pura del motor de batalla y el balance de vida/daño de los jefes.
+### Tecnologías Utilizadas
+- **Core Frontend:** React `19.2.4` (Hooks, estado funcional desacoplado, componentes modulares).
+- **Bundler & Dev Server:** Vite `8.0.0` (HMR ultrarrápido, empaquetado optimizado).
+- **Estilos y Sistema de Diseño:** CSS3 nativo con Design Tokens (`:root`), CSS Grid/Flexbox responsivo, animaciones `@keyframes` aceleradas por GPU y **Sprites Pixel Art en SVG/CSS nativo** (`shapeRendering="crispEdges"`). Cero dependencias pesadas de UI externas para mantener un bundle mínimo.
+- **Audio Procedural:** **Web Audio API** nativa (`src/engine/sound.js`) con síntesis chiptune/retro en tiempo real (sin necesidad de archivos `.mp3` externos para efectos ni música ambiental).
+- **Testing & Calidad:** **Vitest `4.1.4`** (9 suites, **141 pruebas unitarias y de integración**) + **Oxlint** (linter estático de alta velocidad con 0 errores y 0 advertencias).
+- **Persistencia:** `localStorage` con versionado, migración segura y sincronización entre partida (`bug-buster-save`) y progresión RPG extendida (`bug-buster-progression`).
 
-- **i. ¿Qué se pidió a la IA?**
-  Estructurar la progresión completa del jugador entre pantallas, definir la dificultad escalonada de los 3 jefes (`40`, `80` y `130 HP`), conectar las pistas narrativas tras cada victoria, integrar el video de introducción (`intro.mp4`) y validar matemáticamente el balance con pruebas automatizadas.
-- **ii. ¿Por qué se ajustó o refinó el prompt?**
-  Se refinó para asegurar que el juego no fallara si el navegador bloqueaba la reproducción automática del video de intro o si el archivo no estaba disponible, añadiendo un fallback automático y el botón **Saltar**.
-
----
-
-### Prompt 3 — Diseño de personajes (sprites pixelados en CSS), enemigos y menú principal con persistencia
-
-> Estoy haciendo un RPG educativo por turnos llamado "Bug Buster: El Piso Vacío" en HTML/CSS/JS puro (sin framework de estilos). Necesito que agregues lo siguiente al juego actual:
->
-> **1. Diseño del personaje (el jugador):**
-> - Sprite pixelado de un desarrollador novato: camiseta con logo `</>` en el pecho, mochila, ojos grandes y expresivos con cejas levantadas (cara de sorpresa/curiosidad).
-> - Colores: cian (`#00d4ff`) sobre fondo oscuro, para que resalte contra el fondo negro.
-> - Animación: pequeño `"bounce"` al recibir daño y un `"glow"` cian al acertar una respuesta.
->
-> **2. Diseño de los enemigos (los jefes del piso HTML):**
-> - **El Tag Fantasma (`<div>` que se cierra solo):** bajo, redondo, semi-transparente y flotando (efecto fantasma), con brazos cortos. Símbolo `< >` flotando sobre su cabeza.
-> - **La Etiqueta Roja (`<a>` sin `href`):** alargado y delgado, cara confundida, con un eslabón roto colgando (el `href` que le falta).
-> - **El `<html>` Corrupto (jefe final):** grande e imponente, con corona de `<>`, grietas de "código roto" en el cuerpo y ojos rojos.
-> - Cada enemigo lleva su barra de vida en rojo (`#ff4d4d`).
->
-> **3. Menú principal con opciones:**
-> - Un botón **Volver al menú principal** visible durante el juego (no solo al terminar).
-> - En el menú principal deben aparecer: **Reanudar** (solo si hay partida en curso), **Nueva partida** (reproduce de nuevo el video/intro y reinicia progreso) y **Continuar desde el último jefe vencido**.
-> - El progreso se guarda en `localStorage` (jefes vencidos, vida, partida en curso).
-
-- **i. ¿Qué se pidió a la IA?**
-  Crear los sprites visuales del jugador y de los tres jefes utilizando únicamente CSS (`PlayerSprite.jsx`, `BossSprite.jsx`, `index.css`), agregar animaciones de feedback visual (`bounce` y `glow`) e implementar un menú principal completo con guardado de sesión en `localStorage` (`save.js`).
-- **ii. ¿Por qué se ajustó o refinó el prompt?**
-  Se detalló la apariencia exacta de cada jefe relacionada con su bug de HTML (fantasma flotante para `<div>`, eslabón roto para `<a>` sin `href`, grietas y corona `<>` para `<html>`) y se diferenciaron claramente las opciones **Reanudar** (vuelve al turno exacto de la pelea en curso) y **Continuar desde el último jefe vencido** (va al mapa conservando los jefes ya superados).
-
----
-
-### Prompts adicionales de iteración (Sonido, turnos del jefe, economía de café y UX)
-
-Durante las pruebas jugables se enviaron estos prompts adicionales para pulir la experiencia:
-
-- **Prompt 4 (Banco de preguntas):** *"Agrega más preguntas, siento que varias se repiten"* → Se amplió de 9 a **44 preguntas** de HTML distribuidas por temática en los tres jefes.
-- **Prompt 5 (Sonido ambiental y Mute):** *"Agrégale un sonido que tenga que ver con el escenario a toda la página y agrega la opción de mutear"* → Se creó `src/engine/sound.js` con Web Audio API y el botón global de **Mute** en `GameHud.jsx`.
-- **Prompt 6 (Turno del jefe, Café curativo y controles):** *"Agrega algo para que el jefe ataque después de que yo ataque y diga un mensaje para saber que es su turno... que al vencer al jefe gane monedas y pueda comprar café curativo, cada 3 turnos un ataque especial, y agrega una X cuando uno elige un ataque por si quiero cambiar a defender"* → Se implementaron las fases visuales de turno, las frases y animación de ataque del jefe, las monedas + **Máquina de Café TechCorp (`+35 HP`)**, la carga del **Ataque Especial cada 3 turnos** y el botón **`✕`** en el modal de preguntas.
+### Arquitectura en Capas (Separación de Responsabilidades)
+```text
+src/
+├── data/
+│   ├── floors.js                 # Configuración de los 4 pisos (HTML, CSS, JS, React) y sus bossIds
+│   └── bosses.js                 # Los 12 jefes, lore, pistas, diálogos y 131 desafíos educativos (7 tipos)
+├── engine/
+│   ├── battle.js                 # Motor puro e inmutable de combate por turnos (PRNG con semilla mulberry32)
+│   ├── challengeValidator.js     # Validador de los 7 tipos de desafíos (normalización AST/texto, alternativas)
+│   ├── enemyPatterns.js          # IA de jefes: intenciones telegrafiadas, fases de furia (Enrage) y patrones
+│   ├── progression.js            # Economía RPG: mejoras permanentes, skins, accesorios, inventario y logros
+│   ├── exploration.js            # Motor de exploración lateral 2D (movimiento, colisiones, patrullas, nodos)
+│   ├── transitionMachine.js      # Máquina de estados finitos para transiciones de victoria y portales [ > ]
+│   ├── save.js                   # Persistencia principal y retrocompatibilidad de partidas guardadas
+│   └── sound.js                  # Sintetizador Web Audio API (música ambiental por pantalla + SFX de combate/tienda)
+├── components/
+│   ├── CoffeeShop.jsx            # Tienda RPG en 3 Zonas (Vendedor Byte | Catálogo + Inspector | Jugador en vivo)
+│   ├── ItemCard.jsx              # Tarjeta reutilizable de ítems con 7 estados visuales e insignias de rareza
+│   ├── TrophyRoom.jsx            # Sala de trofeos con medallas pixel art, barra de progreso y filtros
+│   ├── PixelIcons.jsx            # Sprites SVG Pixel Art nativos (Byte NPC, ítems, skins, medallas, iconos de stats)
+│   ├── BattleHeader.jsx          # HUD superior de combate
+│   ├── BattleStatus.jsx          # Banner dinámico de fase de turno + diálogo del jefe + telegraphed intent
+│   ├── BattleArena.jsx           # Escenario cyberpunk con plataformas neón, partículas y envoltorios de sprites
+│   ├── CharacterSprite.jsx       # Contenedor de animación por estado (idle, attack, hurt, shield, victory, defeat)
+│   ├── PlayerSprite.jsx          # Sprite del protagonista con soporte en tiempo real para Skins y Accesorios
+│   ├── BossSprite.jsx            # Sprites de los 12 jefes (híbrido PNG pixel art + CSS procedural fallback)
+│   ├── HealthBar.jsx             # Barras de vida segmentadas con trail de daño animado
+│   ├── SpecialAttackMeter.jsx    # Medidor de carga del ataque especial (0/3 a 3/3)
+│   ├── BattleActions.jsx         # Botonera táctica RPG (Comentar, Debug, Ataque Especial, Tomar Café)
+│   ├── CombatEffects.jsx         # Números de daño flotantes, impactos críticos y partículas
+│   └── challenges/               # 7 componentes interactivos para cada modalidad de desafío educativo
+└── screens/
+    ├── Menu.jsx                  # Menú principal con Reanudar, Continuar, Nueva Partida y Sala de Trofeos
+    ├── Intro.jsx                 # Cinemática de introducción (video + narrativa terminal + botón Saltar)
+    ├── FloorMap.jsx              # Mapa de progresión por nodos conectados + Circuito de los 4 pisos
+    ├── Exploration.jsx           # Escenario jugable de desplazamiento lateral 2D con encuentros y secretos
+    ├── Battle.jsx                # Orquestador del combate por turnos y caminatas de victoria hacia el portal [ > ]
+    ├── Clue.jsx                  # Pantalla de pista desbloqueada + acceso a la Tienda de Byte entre combates
+    └── Ending.jsx                # Pantalla de victoria final o derrota con estadísticas de la partida
+```
 
 ---
 
-## 3. Iteración y mejora
+## 3. Los 4 Pisos y los 12 Jefes (Progresión y Balance)
 
-A partir de las pruebas del prototipo inicial se solicitaron e implementaron las siguientes mejoras concretas:
+El desbloqueo es secuencial: **HTML → CSS → JavaScript → React**. Al derrotar a los 3 jefes de un piso se desbloquea el siguiente, permitiendo regresar a pisos anteriores en cualquier momento sin perder el progreso.
 
-1. **Separación visual del Turno del Jugador vs. Turno del Jefe (`Battle.jsx`, `BossSprite.jsx`, `index.css`):**
-   - *Antes:* Al responder una pregunta, la vida del jefe y la del jugador bajaban en el mismo milisegundo, por lo que no se distinguía cuándo contraatacaba el jefe.
-   - *Mejora:* Se dividió la resolución en fases con un banner dinámico (`▶ TU TURNO` en cian → `⚡ Ejecutando ataque...` → `⚠ TURNO DEL JEFE` en rojo pulsante), animación de embestida del jefe (`boss-fx-attack`) y un cuadro de diálogo donde el jefe grita su frase de ataque antes de descontar la vida del jugador.
-2. **Sistema de Monedas (`🪙`) y Máquina de Café (`☕ +35 HP`) (`save.js`, `FloorMap.jsx`, `Clue.jsx`, `ActionBar.jsx`):**
-   - *Mejora:* Vencer a cada jefe otorga monedas (`+30`, `+50`, `+80 🪙`) que permiten comprar cafés curativos (`25 🪙`) en el mapa o tras cada victoria, y beberlos durante el combate para recuperar `+35 HP`.
-3. **Ataque Especial cada 3 turnos y botón `✕` para cancelar pregunta (`QuestionModal.jsx`, `battle.js`):**
-   - *Mejora:* El ataque especial muestra su carga `(X/3)` en el botón y se recarga cada 3 turnos jugados (incluso si se falla una pregunta). Además, se añadió un botón **`✕`** (y soporte para la tecla `Esc`) en el modal de pregunta para poder cerrarlo sin perder el turno si el jugador prefiere activar primero **Comentar** (escudo) o **Tomar Café**.
-4. **Sonido ambiental del escenario y efectos retro (`sound.js`, `GameHud.jsx`):**
-   - *Mejora:* Se sintetizó audio procedural con Web Audio API acorde a la atmósfera misteriosa del edificio vacío y al ritmo de batalla, con sonidos al abrir preguntas, recorrer opciones, acertar, fallar, curarse y bloquear, más el botón **`🔊 Sonido: ON` / `🔇 Mutear: OFF`** en todas las pantallas.
+### Piso 1 — HTML: El Piso Vacío (Color: `#00ff9c` · Verde Terminal)
+| Orden | ID | Nombre del Jefe | HP | Ataque | Daño Base | Recompensa | Temática Educativa |
+| :---: | :--- | :--- | :---: | :--- | :---: | :---: | :--- |
+| 1 | `tag-fantasma` | **El Tag Fantasma** | `40 HP` | *Etiqueta huérfana* | `10` (`20` crít.) | `+30 🪙` | Etiquetas básicas, apertura/cierre y estructura DOM inicial. |
+| 2 | `etiqueta-roja` | **La Etiqueta Roja** | `80 HP` | *Enlace a ninguna parte* | `12` (`24` crít.) | `+50 🪙` | Atributos (`href`, `src`, `alt`), enlaces, imágenes y formularios. |
+| 3 | `html-corrupto` | **El `<html>` Corrupto** | `130 HP` | *Pantalla azul* | `15` (`30` crít.) | `+80 🪙` | HTML5 semántico, accesibilidad (`aria-*`), tablas y metadatos `<head>`. |
+
+### Piso 2 — CSS: El Reino Desordenado (Color: `#38bdf8` · Cian Neón)
+| Orden | ID | Nombre del Jefe | HP | Ataque | Daño Base | Recompensa | Temática Educativa |
+| :---: | :--- | :--- | :---: | :--- | :---: | :---: | :--- |
+| 4 | `selector-oscuro` | **El Selector Oscuro** | `60 HP` | *Cascada rota* | `11` (`22` crít.) | `+45 🪙` | Selectores, clases, IDs, pseudoclases y especificidad CSS. |
+| 5 | `flexbox-caotico` | **Flexbox Caótico** | `100 HP` | *Desbordamiento lateral* | `13` (`26` crít.) | `+65 🪙` | Box Model, `display: flex`, `justify-content`, `align-items` y CSS Grid. |
+| 6 | `rey-responsive` | **El Rey del Responsive** | `140 HP` | *Viewport colapsado* | `15` (`30` crít.) | `+95 🪙` | `@media` queries, unidades relativas (`rem`, `vw`, `%`) y diseño adaptable. |
+
+### Piso 3 — JavaScript: El Bucle Infinito (Color: `#facc15` · Amarillo Ámbar)
+| Orden | ID | Nombre del Jefe | HP | Ataque | Daño Base | Recompensa | Temática Educativa |
+| :---: | :--- | :--- | :---: | :--- | :---: | :---: | :--- |
+| 7 | `undefined` | **Undefined** | `80 HP` | *ReferenceError letal* | `12` (`24` crít.) | `+60 🪙` | Variables (`let`, `const`), tipos de datos, coerción y operadores (`===`). |
+| 8 | `bucle-eterno` | **El Bucle Eterno** | `120 HP` | *Stack Overflow* | `14` (`28` crít.) | `+85 🪙` | Condicionales, funciones, closures, métodos de arrays (`map`, `filter`) y ciclos. |
+| 9 | `senor-async` | **El Señor Async** | `150 HP` | *Promesa rechazada* | `16` (`32` crít.) | `+110 🪙` | Event Loop, `Promise`, `fetch`, `async/await` y manejo de errores (`try/catch`). |
+
+### Piso 4 — React: La Última Renderización (Color: `#c084fc` · Púrpura Reactivo)
+| Orden | ID | Nombre del Jefe | HP | Ataque | Daño Base | Recompensa | Temática Educativa |
+| :---: | :--- | :--- | :---: | :--- | :---: | :---: | :--- |
+| 10 | `componente-roto` | **El Componente Roto** | `90 HP` | * Árbol JSX huérfano* | `13` (`26` crít.) | `+75 🪙` | Sintaxis JSX, componentes funcionales, `props`, fragmentos y listas con `key`. |
+| 11 | `hook-maldito` | **El Hook Maldito** | `130 HP` | *Efecto secundario fugado* | `15` (`30` crít.) | `+100 🪙` | `useState`, `useEffect`, limpieza de efectos y reglas de los Hooks. |
+| 12 | `render-infinito` | **El Render Infinito** | `170 HP` | *Maximum update depth* | `17` (`34` crít.) | `+150 🪙` | Inmutabilidad de estado, arrays de dependencias, `useMemo`/`useCallback` y flujo de datos. |
 
 ---
 
-## 4. Validación del resultado
+## 4. Estrategia Educativa: Los 7 Tipos de Desafíos (131 Ejercicios)
 
-### a. Cómo se probó el código
-1. **Pruebas unitarias y de balance automatizadas (`npm test` con Vitest):**
-   - [`src/engine/battle.test.js`](src/engine/battle.test.js): Verifica creación de batallas, resolución de turnos, golpes críticos, uso y expiración del escudo *Comentar*, racha y *Refactor*, cancelación de preguntas (`cancel`) sin perder la carta del mazo, inmutabilidad del estado y no repetición de preguntas.
-   - [`src/engine/balance.test.js`](src/engine/balance.test.js): Simula combates completos contra los 3 jefes verificando cuántos errores puede cometer el jugador antes de perder y cuánta vida le queda al ganar.
-   - [`src/engine/save.test.js`](src/engine/save.test.js): Prueba el guardado en `localStorage`, migración de versiones, recuperación ante JSON corrupto, compra de café (`buyCoffee`) y reinicio de partida.
-   - [`src/engine/sound.test.js`](src/engine/sound.test.js): Valida el estado de silencio (`mute`), la asignación de música según la pantalla y la emisión/supresión de efectos de sonido.
-2. **Pruebas manuales en el navegador (`npm run dev`):**
-   - Se recorrió el flujo completo: *Menú Principal → Nueva Partida (video de intro + botón Saltar + Mute) → Mapa de pisos → Combate por turnos → Pista y Máquina de Café → Guardado y Reanudación a mitad de pelea*.
+En lugar de limitarse a un quiz tradicional, el motor [`challengeValidator.js`](src/engine/challengeValidator.js) valida **7 formatos interactivos** distribuidos en los 12 jefes (mínimo 8–12 desafíos únicos por jefe, **131 en total**):
 
-### b. Errores, limitaciones o ajustes identificados durante las pruebas
-- **Ajuste 1 — Repetición frecuente de preguntas:** Con solo 3 preguntas iniciales por jefe, en combates contra *El html Corrupto* (`130 HP`) las preguntas se repetían más de 4 veces. Se solucionó ampliando el banco a **44 preguntas** únicas.
-- **Ajuste 2 — Imposibilidad de salir del modal de pregunta:** Al hacer clic en *Debug*, el jugador quedaba atrapado en el modal sin poder volver atrás para usar *Comentar* o *Tomar Café*. Se agregó la acción `question:cancel` en `battle.js` (retrocediendo `questionPos` para no desperdiciar la pregunta) y el botón `✕` en `QuestionModal.jsx`.
-- **Ajuste 3 — Bloqueo de `autoplay` con sonido en navegadores:** Los navegadores bloquean el audio hasta que existe interacción del usuario. Se añadió un listener global (`unlockAudio`) en el primer clic/tecla y un fallback en el `<video>` de intro para que nunca bloquee el inicio del juego.
+1. `multiple-choice`: Selección múltiple táctica con retroalimentación conceptual.
+2. `true-false`: Evaluación rápida de afirmaciones técnicas sobre el lenguaje del piso.
+3. `fill-blank`: Completar fragmentos de código en espacios clave (con soporte para múltiples respuestas válidas y normalización de comillas/espacios).
+4. `code-fix`: Encontrar y corregir la línea defectuosa dentro de un bloque de código con un bug real.
+5. `order-blocks`: Ordenar líneas o etiquetas desordenadas para construir una estructura o algoritmo válido.
+6. `match-pairs`: Emparejar conceptos, selectores, métodos o hooks con su comportamiento exacto.
+7. `free-code`: Escribir una instrucción o expresión de código libre validada mediante reglas flexibles y soluciones alternativas aceptadas.
+
+Cada desafío incluye **ID único**, **pista pedagógica** (disponible si el jugador decide inspeccionar) y **explicación detallada** tras responder.
 
 ---
 
-## 5. Reflexión final
+## 5. Estrategia de Gameplay, Economía y Sistemas RPG
 
-### a. ¿Qué aprendí usando IA para programar?
-Aprendí que dividir un proyecto en **capas pequeñas y bien definidas** (datos en `src/data/`, lógica pura en `src/engine/` y componentes visuales en `src/components/` y `src/screens/`) hace que colaborar con la IA sea mucho más preciso. También aprendí la importancia de pedir **pruebas unitarias automatizadas** desde el principio: gracias a los tests en `battle.test.js` y `save.test.js`, pudimos agregar nuevas mecánicas (como las monedas, el café, el sonido y el botón de cancelar pregunta) sin romper las reglas originales del juego.
+### A. Combate por Turnos con Intenciones Telegrafiadas
+- **Acciones del Jugador:**
+  - **💬 Comentar (`<!-- -->`):** Activa un escudo que absorbe el 100 % del próximo golpe del jefe (hasta `2` usos base por combate, ampliable en la tienda).
+  - **🐛 Debug (Ataque Normal):** Lanza un desafío educativo. Si aciertas, infliges `10 HP` base (+ bonos de ataque de tus mejoras). Si fallas, infliges `0 HP` y el jefe ejecuta un contraataque crítico (`x2` o según su patrón telegrafiado). Incluye botón `✕` (`Esc`) para cancelar y repensar la estrategia antes de responder.
+  - **⚡ Ataque Especial (Refactor · Daño x2):** Se carga cada `3` turnos jugados (`3/3`, o `2/2` con la mejora de sobrecarga) e inflige el doble de daño (`20 HP` base + bonos).
+  - **☕ Tomar Café:** Consume una taza de café del inventario para restaurar `+35 HP` al instante.
+- **IA y Patrones del Jefe (`enemyPatterns.js`):**
+  - Los jefes anuncian su próxima intención antes de que el jugador elija acción (*Ataque Estándar*, *Ataque Cargado 1.5x*, *Drenaje de Datos* o *Preparación Defensiva*).
+  - Al bajar del **40 % de HP**, el jefe entra en **Fase de Furia (Enrage)** con aura visual intensa y mayor agresividad, incentivando guardar escudos o cafés para el tramo final.
 
-### b. ¿Qué ventajas y límites identifiqué del vibecoding?
-- **Ventajas:**
-  - **Velocidad de prototipado e iteración:** Permitió construir sprites complejos en CSS puro, un sintetizador de audio retro con Web Audio API (sin depender de archivos `.mp3` externos) y 44 preguntas educativas en una fracción del tiempo habitual.
-  - **Refinamiento continuo sobre la marcha:** Fue muy natural probar el juego en el navegador, detectar detalles de experiencia de usuario (como sentir que faltaba feedback en el turno del jefe o un botón `✕` en las preguntas) y transformarlos inmediatamente en mejoras concretas.
-- **Límites:**
-  - **Necesidad de especificar bien el comportamiento esperado:** Si un prompt no aclara qué ocurre en los casos borde (por ejemplo, qué pasa si el jugador quiere cancelar una pregunta o si el turno del jefe ocurre al mismo tiempo que el del jugador), la IA toma el camino más directo, que no siempre es el más claro visualmente para el jugador.
-  - **Sincronización con archivos abiertos en el editor:** Al editar archivos simultáneamente entre la IA y pestañas abiertas del IDE, es importante guardar o aceptar los cambios para no sobrescribir versiones previas.
+### B. Tienda RPG en 3 Zonas (`TECHCORP · TIENDA` en `CoffeeShop.jsx`)
+Diseñada como una interfaz de videojuego indie dividida en 3 paneles:
+1. **Zona Izquierda (`VENDEDOR`):** Escenario con **Byte** (NPC robot pixel art animado en estado `idle`), burbuja de diálogo reactiva que comenta sobre cada ítem y accesos rápidos de curación.
+2. **Zona Central (`CATÁLOGO` + Inspector):**
+   - Cuadrícula de componentes [`ItemCard`](src/components/ItemCard.jsx) con **7 estados visuales claros** (`available`, `selected`, `insufficient`, `purchased`, `equipped`, `sold_out`, `locked`) e insignias de rareza (`COMÚN`, `RARO`, `ÉPICO`, `LEGENDARIO`).
+   - **Inspector Inferior:** Muestra la descripción completa en tipografía de alta legibilidad y una **comparativa Antes → Después** para las mejoras permanentes (`HP MÁX: 100 → 120`, `ATQ: 10 → 13`, `DEF: 0 → 3`).
+   - **4 Categorías:**
+     - *Consumibles:* Espresso TechCorp (`+35 HP`), Cold Brew Doble (`+70 HP`), Parche de Emergencia (`+100 % HP`).
+     - *Mejoras Permanentes:* Memoria Expandida (`+20 HP Máx`), Compilador Turbo (`+3 ATQ`), Firewall de Silicio (`+1 Escudo por combate`), Batería de Sobrecarga (reduce carga especial en `-1` turno).
+     - *Skins y Accesorios:* Skins para el protagonista (*Neón Cian*, *Hacker Matrix*, *Samurái Cyber*, *Arquitecto Dorado*) y accesorios (*Visor Holo-Debug*, *Capa Cortafuegos*, *Halo Binario*, *Dron Centinela*).
+     - *Sala de Trofeos (`TrophyRoom.jsx`):* 8 logros desbloqueables con medallas pixel art, barra de progreso global y filtros.
+3. **Zona Derecha (`JUGADOR`):**
+   - **Previsualización en Vivo:** El [`PlayerSprite`](src/components/PlayerSprite.jsx) renderiza en tiempo real la skin o accesorio seleccionado en el catálogo antes de comprarlo (con insignia `VISTA PREVIA`).
+   - Muestra barra de HP actual y tabla de estadísticas con deltas proyectados en verde (`+20`, `+3`).
 
-### c. ¿Qué partes del código comprendo y cuáles necesito reforzar?
-- **Partes que comprendo bien:**
-  - La estructura de datos de los jefes, pistas y preguntas en [`src/data/bosses.js`](src/data/bosses.js) y [`src/data/floors.js`](src/data/floors.js).
-  - El flujo de componentes y estados en React (`useState`, props y navegación entre pantallas en [`src/App.jsx`](src/App.jsx), [`Menu.jsx`](src/screens/Menu.jsx), [`FloorMap.jsx`](src/screens/FloorMap.jsx) y [`QuestionModal.jsx`](src/components/QuestionModal.jsx)).
-  - El diseño visual retro-terminal y las animaciones con `@keyframes` en [`src/index.css`](src/index.css) y el guardado básico con `localStorage` en [`src/engine/save.js`](src/engine/save.js).
-- **Partes que necesito reforzar:**
-  - El funcionamiento interno de la **Web Audio API** en [`src/engine/sound.js`](src/engine/sound.js) (manejo de `AudioContext`, osciladores `OscillatorNode`, envolventes de ganancia con `exponentialRampToValueAtTime` y frecuencias en Hz).
-  - El algoritmo generador de números pseudoaleatorios con semilla (**mulberry32** y operaciones bit a bit como `Math.imul` y `>>> 0`) utilizado en [`src/engine/battle.js`](src/engine/battle.js) para que el barajado de preguntas sea determinista en los tests.
-  - El manejo de múltiples temporizadores asíncronos con `useRef` y `setTimeout` en [`src/screens/Battle.jsx`](src/screens/Battle.jsx) para coordinar las fases de animación entre el turno del jugador y el turno del jefe.
+### C. Mapa de Progresión por Nodos y Exploración Lateral 2D
+- **Circuito Superior de la Torre (`FloorMap.jsx`):** Conecta visualmente los 4 pisos (`PISO 1 · HTML` ──► `PISO 2 · CSS` ──► `PISO 3 · JS` ──► `PISO 4 · REACT`) con marcador `"📍 POSICIÓN ACTUAL"`.
+- **Ruta de Nodos del Piso:** Muestra el camino conectado `[Tienda Byte] ──► [Jefe 1] ──► [Jefe 2] ──► [Jefe 3] ──► [Portal >]`.
+- **Modo Exploración Lateral 2D (`Exploration.jsx`):** Permite caminar por el pasillo cyberpunk del piso (`A/D` o `←/→`), interactuar con terminales de monedas ocultas, visitar el puesto de Byte, encontrarse con los jefes en el mundo y cruzar el portal luminoso `[ > ]` al completar el piso.
 
+---
+
+## 6. Cómo Ejecutar y Verificar el Proyecto
+
+```bash
+# 1. Instalar dependencias
+npm install
+
+# 2. Iniciar servidor de desarrollo (http://localhost:5173)
+npm run dev
+
+# 3. Ejecutar las 9 suites de pruebas (141 tests con Vitest)
+npm test
+
+# 4. Ejecutar linter estático (Oxlint)
+npm run lint
+
+# 5. Compilar para producción
+npm run build
+```

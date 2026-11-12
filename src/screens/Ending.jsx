@@ -4,12 +4,15 @@ import { playSfx } from '../engine/sound'
 function Victory({ onMap }) {
   return (
     <>
-      <h2 className="good">Piso HTML depurado</h2>
+      <h2 className="good">¡Edificio TechCorp completamente depurado!</h2>
       <p>
-        El html Corrupto era el código que dejó el último dev antes de desaparecer.
-        Pero en sus últimas líneas había un import a un archivo que todavía no existe...
+        Derrotaste a los 12 jefes a través de los 4 pisos: HTML (El Piso Vacío),
+        CSS (El Reino Desordenado), JavaScript (El Bucle Infinito) y React (La Última Renderización).
       </p>
-      <p className="muted">styles.css — Piso CSS: próximamente.</p>
+      <p className="muted">
+        El Render Infinito colapsó y los servidores volvieron a estar en verde.
+        Podés volver al mapa cuando quieras para repasar cualquier piso o desafío.
+      </p>
       <div className="actions">
         <button
           className="btn"
@@ -29,7 +32,7 @@ function Defeat({ boss, onRetry, onMap }) {
   return (
     <>
       <h2 className="bad">Game over</h2>
-      <p>{boss.name} sigue suelto en el código.</p>
+      <p>{boss?.name ?? 'El jefe'} sigue suelto en el código.</p>
       <div className="actions">
         <button
           className="btn"
@@ -54,10 +57,10 @@ function Defeat({ boss, onRetry, onMap }) {
   )
 }
 
-function Ending({ won, boss, onRetry, onMap, onMenu, muted, onToggleMute }) {
+function Ending({ won, boss, onRetry, onMap, onMenu, muted, onToggleMute, coins, coffees }) {
   return (
     <main className="screen">
-      <GameHud onMenu={onMenu} muted={muted} onToggleMute={onToggleMute} />
+      <GameHud onMenu={onMenu} muted={muted} onToggleMute={onToggleMute} coins={coins} coffees={coffees} />
       {won ? <Victory onMap={onMap} /> : <Defeat boss={boss} onRetry={onRetry} onMap={onMap} />}
     </main>
   )

@@ -2,18 +2,29 @@ import { useCallback, useEffect, useState } from 'react'
 import { bosses } from './data/bosses'
 import { PLAYER_MAX_HP } from './engine/battle'
 import { buyCoffee, loadSave, resetSave, saveDefeated, writeSave } from './engine/save'
+import {
+  evaluateAchievements,
+  loadProgression,
+  resetProgression,
+  saveProgression,
+} from './engine/progression'
 import { isMuted, playSfx, setSceneAudio, toggleMuted, unlockAudio } from './engine/sound'
 import Intro from './screens/Intro'
 import Menu from './screens/Menu'
 import FloorMap from './screens/FloorMap'
+import Exploration from './screens/Exploration'
 import Battle from './screens/Battle'
 import Clue from './screens/Clue'
 import Ending from './screens/Ending'
 
 function App() {
-  const [save, setSave] = useState(() => loadSave())
+  const [save, setSave] = useState(() => {
+    const initialSave = loadSave()
+    return evaluateAchievements(initialSave, loadProgression()).save
+  })
   const [screen, setScreen] = useState('menu')
   const [bossId, setBossId] = useState(null)
+  const [exploreFloorId, setExploreFloorId] = useState('html')
   const [battleSnap, setBattleSnap] = useState(null)
   const [introKey, setIntroKey] = useState(0)
   const [fightKey, setFightKey] = useState(0)
@@ -26,7 +37,7 @@ function App() {
 
   useEffect(() => {
     if (screen !== 'intro') {
-      setSceneAudio(screen)
+      setSceneAudio(screen === 'explore' ? 'map' : screen)
     }
   }, [screen])
 
@@ -47,7 +58,9 @@ function App() {
   }, [])
 
   const handleBuyCoffee = () => {
-    setSave(buyCoffee())
+    const nextSave = buyCoffee()
+    const ach = evaluateAchievements(nextSave, loadProgression())
+    setSave(ach.save)
   }
 
   const handleUseCoffee = (newHp) => {
@@ -60,11 +73,19 @@ function App() {
     })
   }
 
+  const handleProgressionChange = (updatedSave) => {
+    if (updatedSave && typeof updatedSave === 'object' && 'coins' in updatedSave) {
+      setSave(updatedSave)
+    } else {
+      setSave(loadSave())
+    }
+  }
+
   const openMenu = () => {
     if (screen !== 'menu' && screen !== 'intro') {
       persist({
         inProgress: true,
-        screen,
+        screen: screen === 'explore' ? 'map' : screen,
         bossId,
         battle: screen === 'battle' ? battleSnap : null,
       })
@@ -78,6 +99,11 @@ function App() {
     setFightKey((key) => key + 1)
     persist({ inProgress: true, screen: 'battle', bossId: id, battle: snapshot, playerHp: hp })
     setScreen('battle')
+  }
+
+  const startExploration = (floorId) => {
+    setExploreFloorId(floorId || 'html')
+    setScreen('explore')
   }
 
   const goMap = () => {
@@ -103,20 +129,31 @@ function App() {
   }, [bossId])
 
   const winBattle = () => {
+    const finalHp = battleSnap?.playerHp ?? save.playerHp
     const next = saveDefeated(bossId, {
       inProgress: true,
       screen: 'clue',
       bossId,
       battle: null,
-      playerHp: battleSnap?.playerHp ?? save.playerHp,
+      playerHp: finalHp,
       rewardCoins: boss?.rewardCoins ?? 30,
     })
-    setSave(next)
+
+    let currentProg = loadProgression()
+    if (finalHp >= PLAYER_MAX_HP) {
+      currentProg = saveProgression({
+        flawlessWins: (currentProg.flawlessWins || 0) + 1,
+      })
+    }
+    const achResult = evaluateAchievements(next, currentProg)
+
+    setSave(achResult.save)
     setBattleSnap(null)
     setScreen('clue')
   }
 
   const newGame = () => {
+    resetProgression()
     setSave(resetSave())
     setBossId(null)
     setBattleSnap(null)
@@ -126,11 +163,14 @@ function App() {
 
   const resume = () => {
     const session = loadSave()
-    setBossId(session.bossId)
-    setBattleSnap(session.battle)
+    const validBoss = bosses.some((item) => item.id === session.bossId)
+    const needsBoss = ['battle', 'clue', 'defeat'].includes(session.screen)
+    const nextScreen = needsBoss && !validBoss ? 'map' : session.screen
+    setBossId(validBoss ? session.bossId : null)
+    setBattleSnap(validBoss ? session.battle : null)
     setSave(session)
     setFightKey((key) => key + 1)
-    setScreen(session.screen)
+    setScreen(nextScreen)
   }
 
   const continueFromLast = () => {
@@ -179,6 +219,21 @@ function App() {
           onToggleMute={handleToggleMute}
         />
       )
+    case 'explore':
+      return (
+        <Exploration
+          floorId={exploreFloorId}
+          defeatedBossIds={save.defeatedBossIds}
+          playerHp={save.playerHp}
+          onBuyCoffee={handleBuyCoffee}
+          onUseCoffee={handleUseCoffee}
+          onProgressionChange={handleProgressionChange}
+          onStartEncounter={(id) => startBattle(id)}
+          onMap={goMap}
+          onMenu={openMenu}
+          {...hudProps}
+        />
+      )
     case 'battle':
       return (
         <Battle
@@ -205,6 +260,7 @@ function App() {
           playerHp={save.playerHp}
           onBuyCoffee={handleBuyCoffee}
           onUseCoffee={handleUseCoffee}
+          onProgressionChange={handleProgressionChange}
           onNext={() => (nextBoss ? startBattle(nextBoss.id) : goEnding())}
           onMap={goMap}
           onMenu={openMenu}
@@ -230,7 +286,9 @@ function App() {
           playerHp={save.playerHp}
           onBuyCoffee={handleBuyCoffee}
           onUseCoffee={handleUseCoffee}
+          onProgressionChange={handleProgressionChange}
           onSelectBoss={(id) => startBattle(id)}
+          onExploreFloor={(floorId) => startExploration(floorId)}
           onMenu={openMenu}
           {...hudProps}
         />

@@ -22,7 +22,7 @@ function Menu({ save, onResume, onNewGame, onContinue, muted, onToggleMute }) {
         <PlayerSprite />
         <h1 className="title">Bug Buster</h1>
         <p className="menu-subtitle">El Piso Vacío</p>
-        <p className="muted">RPG educativo por turnos. Depurá el piso HTML.</p>
+        <p className="muted">RPG educativo por turnos. Depurá los 4 pisos: HTML, CSS, JS y React.</p>
         <div className="actions menu-actions">
           {resume && (
             <button className="btn" type="button" onClick={handleClick(onResume)}>Reanudar</button>

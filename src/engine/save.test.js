@@ -131,4 +131,44 @@ describe('save', () => {
     expect(canContinue()).toBe(false)
     expect(canResume()).toBe(false)
   })
+
+  it('preserves multi-floor progress when replaying earlier floor bosses', () => {
+    saveDefeated('tag-fantasma', { rewardCoins: 30 })
+    saveDefeated('etiqueta-roja', { rewardCoins: 50 })
+    saveDefeated('html-corrupto', { rewardCoins: 80 })
+    saveDefeated('selector-oscuro', { rewardCoins: 45 })
+
+    // Replaying a Floor 1 boss does not lose Floor 2 progress and still grants coins
+    const afterReplay = saveDefeated('tag-fantasma', { rewardCoins: 30 })
+    expect(afterReplay.defeatedBossIds).toEqual([
+      'tag-fantasma',
+      'etiqueta-roja',
+      'html-corrupto',
+      'selector-oscuro',
+    ])
+    expect(afterReplay.coins).toBe(30 + 50 + 80 + 45 + 30)
+  })
+
+  it('maintains compatibility with older saves that only defeated HTML bosses', () => {
+    localStorage.setItem(
+      SAVE_KEY,
+      JSON.stringify({
+        version: 2,
+        defeatedBossIds: ['tag-fantasma', 'etiqueta-roja', 'html-corrupto'],
+        playerHp: 75,
+        coins: 160,
+        coffees: 1,
+        inProgress: true,
+        screen: 'map',
+        bossId: 'html-corrupto',
+        battle: null,
+      }),
+    )
+    const loaded = loadSave()
+    expect(loaded.defeatedBossIds).toEqual(['tag-fantasma', 'etiqueta-roja', 'html-corrupto'])
+    expect(loaded.coins).toBe(160)
+    expect(loaded.coffees).toBe(1)
+    expect(canResume(loaded)).toBe(true)
+    expect(canContinue(loaded)).toBe(true)
+  })
 })

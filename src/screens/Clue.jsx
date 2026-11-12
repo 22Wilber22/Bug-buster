@@ -11,6 +11,7 @@ function Clue({
   coffees = 0,
   onBuyCoffee,
   onUseCoffee,
+  onProgressionChange,
   onNext,
   onMap,
   onMenu,
@@ -38,6 +39,7 @@ function Clue({
         coffees={coffees}
         onBuyCoffee={onBuyCoffee}
         onUseCoffee={onUseCoffee}
+        onProgressionChange={onProgressionChange}
       />
       <div className="actions">
         <button
